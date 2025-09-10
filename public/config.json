@@ -2,7 +2,7 @@
   "microFrontends": [
     {
       "name": "auth-app",
-      "url": "http://localhost:3001/remoteEntry.js",
+      "url": "https://arh-mfe-auth.vercel.app/remoteEntry.js",
       "module": "./Login",
       "scope": "authApp",
       "routes": ["/login", "/profile"],
@@ -11,7 +11,7 @@
     },
     {
       "name": "booking-app",
-      "url": "http://localhost:3002/remoteEntry.js",
+      "url": "https://arh-mfe-booking.vercel.app/remoteEntry.js",
       "module": "./BookingList",
       "scope": "bookingApp",
       "routes": ["/bookings", "/book"],
@@ -20,7 +20,7 @@
     },
     {
       "name": "reporting-app",
-      "url": "http://localhost:3003/remoteEntry.js",
+      "url": "https://arh-mfe-reporting.vercel.app/remoteEntry.js",
       "module": "./ReportDashboard",
       "scope": "reportingApp",
       "routes": ["/reports"],
