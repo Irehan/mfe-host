@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const { ModuleFederationPlugin } = require('webpack').container;
 
 const isDev = process.env.NODE_ENV !== 'production';
@@ -9,26 +10,42 @@ module.exports = {
   entry: path.resolve(__dirname, 'src/index.tsx'),
   output: {
     path: path.resolve(__dirname, 'dist'),
-    publicPath: 'auto',                // ✅ prevents wrong URL resolution & first-load white screen
+    publicPath: 'auto', // ✅ prevents wrong URL resolution & first-load white screen
     filename: isDev ? '[name].js' : '[name].[contenthash].js',
     chunkFilename: isDev ? '[name].js' : '[name].[contenthash].js',
-    clean: true
+    clean: true,
   },
   devtool: isDev ? 'eval-cheap-module-source-map' : 'source-map',
   resolve: {
-    extensions: ['.tsx', '.ts', '.jsx', '.js']
+    extensions: ['.tsx', '.ts', '.jsx', '.js'],
   },
   module: {
     rules: [
       { test: /\.tsx?$/, loader: 'ts-loader', exclude: /node_modules/ },
-      { test: /\.css$/, use: ['style-loader', 'css-loader'] }
-    ]
+      { test: /\.css$/, use: ['style-loader', 'css-loader'] },
+    ],
   },
   plugins: [
+    // ✅ generates index.html from template
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'public/index.html'),
-      cache: false                        // ✅ always serve fresh index.html in dev
+      cache: false,
     }),
+
+    // ✅ copies everything in public/ (except index.html) → dist/
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'public'),
+          to: path.resolve(__dirname, 'dist'),
+          globOptions: {
+            ignore: ['**/index.html'], // 🚀 prevents conflict
+          },
+        },
+      ],
+    }),
+
+    // ✅ sets up module federation
     new ModuleFederationPlugin({
       name: 'host_container',
       filename: 'remoteEntry.js',
@@ -42,9 +59,9 @@ module.exports = {
       shared: {
         react: { singleton: true, requiredVersion: false },
         'react-dom': { singleton: true, requiredVersion: false },
-        'react-router-dom': { singleton: true, requiredVersion: false }
-      }
-    })
+        'react-router-dom': { singleton: true, requiredVersion: false },
+      },
+    }),
   ],
   devServer: {
     port: 3000,
@@ -52,15 +69,15 @@ module.exports = {
     historyApiFallback: true,
     static: {
       directory: path.resolve(__dirname, 'public'),
-      watch: true
+      watch: true,
     },
     headers: {
-      'Cache-Control': 'no-store'        // ✅ avoid cached stale HTML/JS in dev
+      'Cache-Control': 'no-store', // ✅ avoid cached stale HTML/JS in dev
     },
     client: {
       overlay: true,
       progress: false,
-      logging: 'info'
-    }
-  }
+      logging: 'info',
+    },
+  },
 };
