@@ -1,0 +1,13 @@
+.theme-switcher {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .4rem .75rem;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-elevated);
+  color: var(--color-text);
+  font-weight: 800; cursor: pointer;
+  transition: transform .06s ease, box-shadow .2s ease, background .2s ease;
+}
+.theme-switcher:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.theme-icon { font-size: 1rem; }
+.theme-label { font-size: .9rem; }

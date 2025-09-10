@@ -1,0 +1,83 @@
+/* D:\web-dev\react-practice\mfe-demo\packages\host\public\theme.css */
+/* === Design Tokens (Light) ================================================= */
+:root {
+  /* Brand (Indigo for Light Mode) */
+  --brand-h: 258;
+  --brand-s: 85%;
+  --brand-l: 56%;
+
+  /* Core palette (LIGHT) */
+  --color-primary: hsl(var(--brand-h), var(--brand-s), var(--brand-l));
+  --color-primary-600: hsl(var(--brand-h), var(--brand-s), 48%);
+  --color-primary-700: hsl(var(--brand-h), var(--brand-s), 41%);
+
+  --color-bg: #ffffff;
+  --color-surface: #f9fafb;
+  --color-elevated: #f3f4f6;
+
+  --color-text: #213547;
+  --color-text-muted: #6b7280;
+  --color-border: rgba(0,0,0,0.1);
+
+  /* Accents & states */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Elevation, radii, spacing, motion */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.1);
+  --shadow-md: 0 6px 16px rgba(0,0,0,0.12);
+  --shadow-lg: 0 16px 40px rgba(0,0,0,0.2);
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  --container-max: 1200px;
+
+  /* Typography */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+
+  /* Focus */
+  --focus-ring: 0 0 0 3px rgba(88, 101, 242, 0.45);
+
+  /* Light mode background gradient disabled */
+  --color-bg-gradient: none;
+}
+
+/* === Design Tokens (Dark) ================================================== */
+:root[data-theme="dark"] {
+  --color-bg: #0a0b0f;
+  --color-surface: #0e1016;
+  --color-elevated: #141826;
+
+  --color-text: #e7ebf3;
+  --color-text-muted: #a8b1c2;
+  --color-border: rgba(255,255,255,0.1);
+
+  /* Teal Glow Gradient for Dark Mode */
+  --color-bg-gradient: radial-gradient(
+    circle at center,
+    rgba(100,255,218,var(--gradient-opacity,.2)) 0,
+    rgba(17,34,64,0) 70%
+  );
+}

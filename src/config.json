@@ -1,0 +1,36 @@
+{
+  "microFrontends": [
+    {
+      "name": "auth-app",
+      "url": "http://localhost:3001/remoteEntry.js",
+      "module": "./Login",
+      "scope": "authApp",
+      "routes": ["/login", "/profile"],
+      "displayName": "Authentication",
+      "roles": ["user", "admin"]
+    },
+    {
+      "name": "booking-app",
+      "url": "http://localhost:3002/remoteEntry.js",
+      "module": "./BookingList",
+      "scope": "bookingApp",
+      "routes": ["/bookings", "/book"],
+      "displayName": "Booking Management",
+      "roles": ["user", "admin"]
+    },
+    {
+      "name": "reporting-app",
+      "url": "http://localhost:3003/remoteEntry.js",
+      "module": "./ReportDashboard",
+      "scope": "reportingApp",
+      "routes": ["/reports"],
+      "displayName": "Reporting",
+      "roles": ["admin"]
+    }
+  ],
+  "fallbackConfig": {
+    "showErrorBoundary": true,
+    "retryAttempts": 3,
+    "retryDelay": 1000
+  }
+}
