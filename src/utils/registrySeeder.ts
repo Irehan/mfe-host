@@ -1,3 +1,4 @@
+// packages/host/src/utils/registrySeeder.ts
 import type { MicroFrontendConfig, RegistryResponse } from './configLoader';
 import { REGISTRY_URL, hasRegistry } from './configLoader';
 
@@ -26,7 +27,7 @@ async function getStaticConfig(): Promise<RegistryResponse | null> {
   }
 }
 
-/** Auto-seed the registry from /config.json if empty and registry is enabled */
+/** Seed registry from /config.json if registry is enabled and empty */
 export async function seedRegistryFromStatic(): Promise<void> {
   if (!hasRegistry()) {
     console.log('ℹ️ Registry not configured; skipping seed.');
@@ -47,7 +48,7 @@ export async function seedRegistryFromStatic(): Promise<void> {
 
   try {
     await Promise.all(
-      stat.microFrontends.map((mfe: MicroFrontendConfig) =>
+      stat.microFrontends.map((mfe) =>
         fetch(REGISTRY_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

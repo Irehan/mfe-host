@@ -1,0 +1,7 @@
+{
+  "rewrites": [{ "source": "/(.*)", "destination": "/" }],
+  "headers": [
+    { "source": "/remoteEntry.js", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
+    { "source": "/config.json",   "headers": [{ "key": "Cache-Control", "value": "no-store" }] }
+  ]
+}
