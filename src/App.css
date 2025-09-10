@@ -153,7 +153,7 @@ body {
   font-weight: 800; font-size: .95rem;
   transition: transform .06s ease, box-shadow .2s ease, filter .2s ease; border: 1px solid rgba(255,255,255,.08);
 }
-.module-button:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); filter: brightness(1.03); }
+.module-button:hover { background: var(--color-bg); transform: translateY(-1px); box-shadow: var(--shadow-md); filter: brightness(1.03); }
 
 /* Access Denied / Not Found / Fallbacks */
 .access-denied, .not-found,

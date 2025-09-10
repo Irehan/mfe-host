@@ -7,6 +7,7 @@ import './index.css';
 import { ThemeProvider } from './components/ThemeProvider';
 import { seedRegistryFromStatic } from './utils/registrySeeder';
 
+
 // Mark this as host container
 window.name = 'host-container';
 
