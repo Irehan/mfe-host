@@ -1,5 +1,6 @@
 import ThemeProvider from './components/ThemeProvider';
 import ThemeSwitcher from './components/ThemeSwitcher';
+import { RequireRole } from './components/RequireRole';
 import './App.css';
 
 import React, { useEffect } from 'react';
@@ -117,6 +118,7 @@ function AppContent() {
 
       <main className="app-main">
         <Routes>
+          {/* Root redirect */}
           <Route
             path="/"
             element={
@@ -128,6 +130,7 @@ function AppContent() {
             }
           />
 
+          {/* Login */}
           <Route
             path="/login"
             element={
@@ -144,6 +147,7 @@ function AppContent() {
             }
           />
 
+          {/* Dashboard */}
           <Route
             path="/dashboard"
             element={
@@ -198,6 +202,7 @@ function AppContent() {
             }
           />
 
+          {/* Profile */}
           <Route
             path="/profile"
             element={
@@ -214,56 +219,37 @@ function AppContent() {
             }
           />
 
+          {/* Bookings (admin only) */}
           <Route
             path="/bookings"
             element={
-              !state.user ? (
-                <Navigate to="/login" replace />
-              ) : state.user.role !== 'admin' ? (
-                <div className="access-denied">
-                  <h2>Access Denied</h2>
-                  <p>You don't have permission to access the booking module.</p>
-                  <p>Please contact your administrator for access.</p>
-                  <Link to="/dashboard" className="home-button">
-                    Return to Dashboard
-                  </Link>
-                </div>
-              ) : (
-                cfgOr(findConfig('bookingApp'), () => (
+              <RequireRole user={state.user} allowed={['admin']}>
+                {cfgOr(findConfig('bookingApp'), () => (
                   <div className="fallback-booking">
                     <h2>Booking Module Unavailable</h2>
                     <p>The booking module is currently unavailable.</p>
                   </div>
-                ))
-              )
+                ))}
+              </RequireRole>
             }
           />
 
+          {/* Reports (admin only) */}
           <Route
             path="/reports"
             element={
-              !state.user ? (
-                <Navigate to="/login" replace />
-              ) : state.user.role !== 'admin' ? (
-                <div className="access-denied">
-                  <h2>Access Denied</h2>
-                  <p>You don't have permission to access the reporting module.</p>
-                  <p>Please contact your administrator for access.</p>
-                  <Link to="/dashboard" className="home-button">
-                    Return to Dashboard
-                  </Link>
-                </div>
-              ) : (
-                cfgOr(findConfig('reportingApp', './ReportDashboard'), () => (
+              <RequireRole user={state.user} allowed={['admin']}>
+                {cfgOr(findConfig('reportingApp', './ReportDashboard'), () => (
                   <div className="fallback-reporting">
                     <h2>Reporting Module Unavailable</h2>
                     <p>The reporting module is currently unavailable.</p>
                   </div>
-                ))
-              )
+                ))}
+              </RequireRole>
             }
           />
 
+          {/* 404 */}
           <Route
             path="*"
             element={
