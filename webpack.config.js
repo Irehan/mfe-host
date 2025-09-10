@@ -1,4 +1,3 @@
-// packages/host/webpack.config.js
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { ModuleFederationPlugin } = require('webpack').container;
@@ -31,16 +30,14 @@ module.exports = {
       cache: false,
     }),
 
-    // ✅ expose process.env.VITE_REGISTRY_URL to the browser bundle
+    // Make process.env.VITE_REGISTRY_URL available in the browser bundle
     new webpack.EnvironmentPlugin({
-      VITE_REGISTRY_URL: '', // default empty; we’ll read it safely in code
+      VITE_REGISTRY_URL: '', // safe default
     }),
 
-    // ✅ copy everything from public/ into dist/ (includes config.json)
+    // Ensure /public (incl. config.json) is copied to dist/
     new CopyWebpackPlugin({
-      patterns: [
-        { from: path.resolve(__dirname, 'public'), to: '.' },
-      ],
+      patterns: [{ from: path.resolve(__dirname, 'public'), to: '.' }],
     }),
 
     new ModuleFederationPlugin({

@@ -1,5 +1,3 @@
-// packages/host/src/utils/configLoader.ts
-
 export type MicroFrontendConfig = {
   name: string;
   displayName: string;
@@ -16,22 +14,28 @@ export type RegistryResponse = {
   updatedAt?: string;
 };
 
+/**
+ * Safely resolve the registry URL:
+ * - Prefer process.env (Webpack EnvironmentPlugin) if available
+ * - Fall back to import.meta.env only in DEV
+ * - In PROD, default to '' (disabled) unless explicitly configured
+ */
 function readRegistryUrl(): string {
   const fromProcess =
     typeof process !== 'undefined' &&
     (process as any).env &&
     (process as any).env.VITE_REGISTRY_URL;
 
-  const fromImportMeta =
-    typeof import.meta !== 'undefined' &&
-    (import.meta as any)?.env?.DEV &&
-    (import.meta as any)?.env?.VITE_REGISTRY_URL;
+  const meta: any =
+    typeof import.meta !== 'undefined' ? (import.meta as any) : undefined;
+
+  const isDev = Boolean(meta?.env?.DEV);
+  const fromImportMeta = meta?.env?.VITE_REGISTRY_URL;
 
   if (fromProcess) return String(fromProcess);
-  if (fromImportMeta) return String(fromImportMeta);
+  if (isDev && fromImportMeta) return String(fromImportMeta);
 
-  const isDev =
-    typeof import.meta !== 'undefined' && Boolean((import.meta as any)?.env?.DEV);
+  // Dev-only fallback to local registry for convenience
   return isDev ? 'http://localhost:4000/registry' : '';
 }
 
@@ -64,6 +68,7 @@ function mergeByScope(primary: MicroFrontendConfig[], fallback: MicroFrontendCon
   return Array.from(map.values());
 }
 
+/** Load config with resilience: Registry -> Static -> Merge */
 export async function loadConfig(): Promise<RegistryResponse> {
   const [reg, stat] = await Promise.all([fetchRegistry(), fetchStatic()]);
 
