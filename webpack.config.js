@@ -7,7 +7,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const isDev = process.env.NODE_ENV !== 'production';
 
-module.exports = {
+const config = {
   mode: isDev ? 'development' : 'production',
   entry: path.resolve(__dirname, 'src/index.tsx'),
   output: {
@@ -28,17 +28,23 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'public/index.html'),
+      filename: 'index.html',        // <- make filename explicit
       cache: false,
     }),
 
-    // Make process.env.VITE_REGISTRY_URL available in the browser bundle
     new webpack.EnvironmentPlugin({
       VITE_REGISTRY_URL: '', // default empty (prod safe)
     }),
 
-    // Ship everything from public/ to dist/ (includes config.json)
+    // IMPORTANT: don't copy index.html, HtmlWebpackPlugin will emit it
     new CopyWebpackPlugin({
-      patterns: [{ from: path.resolve(__dirname, 'public'), to: '.' }],
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'public'),
+          to: '.',
+          globOptions: { ignore: ['**/index.html'] }, // <- fixes the Vercel error
+        },
+      ],
     }),
 
     new ModuleFederationPlugin({
@@ -64,3 +70,11 @@ module.exports = {
     client: { overlay: true, progress: false, logging: 'info' },
   },
 };
+
+// 👇 This is where to paste your log
+console.log(
+  'Plugins:',
+  (config.plugins || []).map((p) => (p && p.constructor && p.constructor.name) || 'Unknown')
+);
+
+module.exports = config;
