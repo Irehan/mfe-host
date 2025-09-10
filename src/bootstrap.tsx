@@ -4,6 +4,7 @@ import App from './App';
 import { eventBus } from './utils/eventBus';
 import './index.css';
 import { ThemeProvider } from './components/ThemeProvider';
+import { seedRegistryFromStatic } from './utils/registrySeeder'; // 👈 add
 // Mark this as host container
 window.name = 'host-container';
 
@@ -19,6 +20,18 @@ if (typeof window !== 'undefined') {
     return originalEmit(event, data);
   };
 }
+
+// 👉 Seed registry once (if configured), then render app
+seedRegistryFromStatic().finally(() => {
+  const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+  root.render(
+    <React.StrictMode>
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    </React.StrictMode>
+  );
+});
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
