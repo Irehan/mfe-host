@@ -2,7 +2,8 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { ModuleFederationPlugin } = require('webpack').container;
-const webpack = require('webpack'); // 👈 add this
+const webpack = require('webpack');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -14,25 +15,34 @@ module.exports = {
     publicPath: 'auto',
     filename: isDev ? '[name].js' : '[name].[contenthash].js',
     chunkFilename: isDev ? '[name].js' : '[name].[contenthash].js',
-    clean: true
+    clean: true,
   },
   devtool: isDev ? 'eval-cheap-module-source-map' : 'source-map',
   resolve: { extensions: ['.tsx', '.ts', '.jsx', '.js'] },
   module: {
     rules: [
       { test: /\.tsx?$/, loader: 'ts-loader', exclude: /node_modules/ },
-      { test: /\.css$/, use: ['style-loader', 'css-loader'] }
-    ]
+      { test: /\.css$/, use: ['style-loader', 'css-loader'] },
+    ],
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'public/index.html'),
-      cache: false
+      cache: false,
     }),
-    // 👇 inject env var for browser code: process.env.VITE_REGISTRY_URL
+
+    // ✅ expose process.env.VITE_REGISTRY_URL to the browser bundle
     new webpack.EnvironmentPlugin({
-      VITE_REGISTRY_URL: '' // default empty in prod if not set
+      VITE_REGISTRY_URL: '', // default empty; we’ll read it safely in code
     }),
+
+    // ✅ copy everything from public/ into dist/ (includes config.json)
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: path.resolve(__dirname, 'public'), to: '.' },
+      ],
+    }),
+
     new ModuleFederationPlugin({
       name: 'host_container',
       filename: 'remoteEntry.js',
@@ -43,9 +53,9 @@ module.exports = {
       shared: {
         react: { singleton: true, requiredVersion: false },
         'react-dom': { singleton: true, requiredVersion: false },
-        'react-router-dom': { singleton: true, requiredVersion: false }
-      }
-    })
+        'react-router-dom': { singleton: true, requiredVersion: false },
+      },
+    }),
   ],
   devServer: {
     port: 3000,
@@ -53,6 +63,6 @@ module.exports = {
     historyApiFallback: true,
     static: { directory: path.resolve(__dirname, 'public'), watch: true },
     headers: { 'Cache-Control': 'no-store' },
-    client: { overlay: true, progress: false, logging: 'info' }
-  }
+    client: { overlay: true, progress: false, logging: 'info' },
+  },
 };

@@ -1,4 +1,5 @@
 // packages/host/src/utils/configLoader.ts
+
 export type MicroFrontendConfig = {
   name: string;
   displayName: string;
@@ -15,8 +16,28 @@ export type RegistryResponse = {
   updatedAt?: string;
 };
 
-const REGISTRY_URL = (process?.env?.VITE_REGISTRY_URL as string) || '';
-const hasRegistry = () => typeof REGISTRY_URL === 'string' && REGISTRY_URL.startsWith('http');
+function readRegistryUrl(): string {
+  const fromProcess =
+    typeof process !== 'undefined' &&
+    (process as any).env &&
+    (process as any).env.VITE_REGISTRY_URL;
+
+  const fromImportMeta =
+    typeof import.meta !== 'undefined' &&
+    (import.meta as any)?.env?.DEV &&
+    (import.meta as any)?.env?.VITE_REGISTRY_URL;
+
+  if (fromProcess) return String(fromProcess);
+  if (fromImportMeta) return String(fromImportMeta);
+
+  const isDev =
+    typeof import.meta !== 'undefined' && Boolean((import.meta as any)?.env?.DEV);
+  return isDev ? 'http://localhost:4000/registry' : '';
+}
+
+export const REGISTRY_URL = readRegistryUrl();
+export const hasRegistry = () =>
+  typeof REGISTRY_URL === 'string' && REGISTRY_URL.startsWith('http');
 
 async function fetchRegistry(): Promise<RegistryResponse | null> {
   if (!hasRegistry()) return null;
@@ -39,11 +60,10 @@ async function fetchStatic(): Promise<RegistryResponse> {
 function mergeByScope(primary: MicroFrontendConfig[], fallback: MicroFrontendConfig[]) {
   const map = new Map<string, MicroFrontendConfig>();
   for (const m of fallback) map.set(m.scope, m);
-  for (const m of primary) map.set(m.scope, m); // primary wins
+  for (const m of primary) map.set(m.scope, m); // primary (registry) wins
   return Array.from(map.values());
 }
 
-/** Load config with resilience: Registry -> Static -> Merge */
 export async function loadConfig(): Promise<RegistryResponse> {
   const [reg, stat] = await Promise.all([fetchRegistry(), fetchStatic()]);
 
@@ -57,5 +77,3 @@ export async function loadConfig(): Promise<RegistryResponse> {
   console.log('✅ Using merged config from registry + static:', resp);
   return resp;
 }
-
-export { REGISTRY_URL, hasRegistry };
