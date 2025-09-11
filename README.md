@@ -1,97 +1,190 @@
-### Tree-of-Thought Reasoning for Structuring the Host Module README
+# Host Container — React + TypeScript + Webpack Module Federation
 
-**Branch 1: Project Overview and Purpose**  
-Strengths: The README should define the Host module's role as the shell of the micro-frontend architecture, managing routing and dynamic loading of Auth, Booking, and Reporting modules, aligning with the assignment’s enterprise SaaS frontend goal. Highlighting its responsibility for fallback UI clarifies its purpose.  
-Weaknesses: Over-detailing technical implementation could confuse users; focus on its orchestrating role.  
-Potential: High—sets a clear foundation, critical for senior developers integrating the system.
+The **Host** is the shell app that provides **routing**, **shared state (user + theme)**, and **dynamic runtime loading** of Micro‑Frontends (MFEs). It discovers MFEs at **runtime** from a **registry** (local Express or Vercel serverless) and falls back to a static **`config.json`** — so changing remote URLs does **not** require rebuilding the host.
 
-**Branch 2: Setup and Installation Instructions**  
-Strengths: Step-by-step guidance for cloning, installing, and running the Host module ensures reproducibility, a key requirement for the host app. Specifying Node.js 16+ and npm 7+ aligns with current dev standards.  
-Weaknesses: Omitting port details or setup dependencies might hinder setup; include essentials.  
-Potential: High—enables quick onboarding, supporting the dynamic loading requirement.
+Live:
+- Host (Vercel): https://arh-mfe-host.vercel.app/
+- Host (Local): http://localhost:3000/
+- Registry (Local Express): http://localhost:4000/registry
+- Registry (Vercel serverless): https://arh-mfe-registry.vercel.app/api/registry
+- Example remote entry (Booking): https://arh-mfe-booking.vercel.app/remoteEntry.js
 
-**Branch 3: Technical Details and Integration**  
-Strengths: Detailing Webpack Module Federation for hosting remotes, runtime config usage (JSON file), and cross-app communication (e.g., Event Bus) meets requirements for dynamic loading and state sharing. Mentioning error handling reinforces the assignment’s design.  
-Weaknesses: Excessive depth (e.g., full config code) could overwhelm; keep it high-level with references.  
-Potential: Medium—supports advanced users while addressing fallback UI and communication specs.
+---
 
-**Evaluation & Pruning**: Prune Branch 3 partially (omit full config code, link to source instead). Synthesize Branches 1 and 2 to deliver a concise README with an overview, clear setup steps, and minimal technical pointers, ensuring professionalism and readiness. Why this matters: Clear documentation remains a cornerstone for reducing setup friction, a priority in modern development workflows.
-
-**Synthesized Solution**: Create a README for the Host module with a professional template, covering architecture, quick start, and integration hints, tailored for direct implementation. Below is the drop-in file.
-
-#### README for Host Module
-
-**File: packages/host/README.md**
-
-````markdown
-# React Micro-Frontend Architecture - Host Module
-
-A pluggable host module built with React, TypeScript, and Webpack Module Federation. This module serves as the shell for an enterprise SaaS frontend, managing dynamic integration of Auth, Booking, and Reporting micro-frontends.
-
-## 🏗️ Architecture Overview
-
-- **Host Module**: Acts as the central shell, providing routing and dynamic loading of micro-frontends.
-- **Dynamic Loading**: Loads Auth, Booking, and Reporting modules at runtime using a JSON configuration file.
-- **Cross-App Communication**: Facilitates user/session state sharing via an Event Bus across integrated modules.
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Node.js 16+
-- npm 7+
-
-### Installation & Setup
-
-1. **Clone and install dependencies:**
-
-   ```bash
-   git clone <repository-url>
-   cd mfe-demo
-
-   # Install root dependencies
-   npm install
-
-   # Install host module
-   cd packages/host && npm install
-   ```
-````
-
-2. **Run the Host Module:**
-
-   ```bash
-   npm start
-   ```
-
-   - The module runs on `http://localhost:3000/`.
-   - Ensure all micro-frontends (Auth, Booking, Reporting) are running on their respective ports (3001, 3002, 3003).
-
-### Configuration
-
-- **Runtime Config**: Uses a JSON file (`public/config.json`) for remote URLs and module routes. No hardcoded paths.
-- **Remotes**: Configures `authApp`, `bookingApp`, and `reportingApp` for dynamic loading.
-
-## 🛠️ Development
-
-- **Build**: `npm run build` to generate production assets.
-- **Troubleshooting**: If a module fails to load, check `public/config.json` for correct URLs and ensure CORS headers are configured. Verify all remotes are active.
-
-## 📝 Notes
-
-- Refer to `src/index.tsx` and `webpack.config.js` for implementation details.
-- Error handling includes a fallback UI (e.g., "Module is currently unavailable") via an error boundary.
-
-## 🤝 Contributing
-
-- Fork the repository and submit pull requests for enhancements.
-- Report issues via the repository's issue tracker.
+## 📁 Project Structure
 
 ```
-
-[Assumption: The repository URL is placeholder `<repository-url>`; replace with the actual URL in production.]
-
-[Assumption: The Host module’s port (3000) and remote ports (3001, 3002, 3003) match the `config.json` setup from prior responses.]
-
-**Instruction Compliance Check**: All directives addressed—ToT applied, README follows the example structure, professional tone maintained, no code provided as requested, ready for direct use.
-
+packages/host/
+├─ public/
+│  ├─ index.html
+│  └─ config.json            # static fallback MFEs & defaults
+├─ src/
+│  ├─ components/
+│  │  ├─ ThemeProvider.tsx   # theme context (light/dark/system) + persistence
+│  │  ├─ ThemeSwitcher.tsx   # theme toggle UI
+│  │  ├─ RequireRole.tsx     # role-based route guard
+│  │  └─ ModuleFederationErrorBoundary.tsx  # per-remote error isolation + retry
+│  ├─ context/
+│  │  └─ AppContext.tsx      # central app state (user + config + loader)
+│  ├─ utils/
+│  │  ├─ configLoader.ts     # resolve registry URL or /config.json and merge
+│  │  ├─ eventBus.ts         # global event bus (auth/login & auth/logout, etc.)
+│  │  ├─ moduleLoader.ts     # dynamic loader for remoteEntry & exposed modules
+│  │  └─ registrySeeder.ts   # optional: seed local/remote registry from static
+│  ├─ RemoteModule.tsx       # dynamic remote renderer + prop injection
+│  ├─ bootstrap.tsx          # mount + (optional) seed registry before load
+│  └─ index.tsx
+└─ webpack.config.js         # MF config + HtmlWebpackPlugin + CopyPlugin(ignore index.html)
 ```
+
+---
+
+## 1) Setup
+
+### Quick Start (development)
+```bash
+# monorepo root
+npm install
+
+# start all (host + mfes + local registry)
+npm run start:all
+
+# OR start only the host
+npm --prefix packages/host start   # http://localhost:3000
+```
+
+### Build
+```bash
+npm --prefix packages/host run build
+# → packages/host/dist
+```
+
+### Deploy to Vercel (static)
+- **Project Root**: `packages/host`
+- **Build Command**: `npm run build`
+- **Output Directory**: `dist`
+- **Environment Variable**: `VITE_REGISTRY_URL = https://arh-mfe-registry.vercel.app/api/registry`
+- **SPA routing** (optional `vercel.json` at repo root):
+```json
+{ "rewrites": [{ "source": "/(.*)", "destination": "/" }] }
+```
+
+> For local testing without a registry URL, ensure `public/config.json` contains MFEs.
+
+---
+
+## 2) Architecture Decisions
+
+- **Runtime discovery & merge**
+  - Resolve config in order: **`VITE_REGISTRY_URL` → `public/config.json`**.
+  - Merge by `scope` so **registry overrides** static entries.
+- **Module Federation container**
+  - Host loads remotes dynamically from runtime config (no hard‑coded URLs).
+  - **Shared singletons**: `react`, `react-dom`, `react-router-dom`.
+  - **Exposes**: `./ThemeProvider`, `./ThemeSwitcher` for reuse.
+- **State composition (AppContext)**
+  - Holds `{ user, config, loading }`, **hydrates user** from localStorage,
+    listens to `auth:login` / `auth:logout` on the event bus,
+    provides `setUser()` and `refreshConfig()`.
+- **Error isolation & resilience**
+  - `ModuleFederationErrorBoundary` wraps every remote,
+    shows friendly fallback UI, and performs **exponential backoff retries**
+    with a “Report Error” console dump for diagnostics.
+- **Theming**
+  - `ThemeProvider` supports **light/dark/system**, persists preference,
+    and toggles `<html data-theme>`.
+- **Optional Registry Seeding**
+  - In dev, `registrySeeder` can POST `public/config.json` entries to a registry
+    so reviewers can test the runtime discovery path immediately.
+
+---
+
+## 3) Communication Design
+
+- **Global event bus**
+  - Emits: `auth:login`, `auth:logout`, `booking:created`, `booking:updated`.
+  - Consumers update UI/charts across MFEs in real time.
+- **Prop contracts to MFEs**
+  - `authApp ./Login` → `onLogin(user)`; Host stores user and navigates.
+  - `authApp ./UserProfile` → `onLogout()`; Host clears user.
+  - `reportingApp ./ReportDashboard` receives `{ user }` to enforce **admin‑only** access.
+- **Registry contract**
+  - Host fetches `{ microFrontends }` from the registry and, per entry,
+    loads `remoteEntry.js` then the exposed `module` under its `scope`.
+
+---
+
+## ⚙️ Runtime Configuration Example (`public/config.json`)
+
+```json
+{
+  "microFrontends": [
+    {
+      "name": "auth-app",
+      "url": "http://localhost:3001/remoteEntry.js",
+      "module": "./Login",
+      "scope": "authApp",
+      "routes": ["/login", "/profile"],
+      "displayName": "Authentication",
+      "roles": ["user", "admin"]
+    },
+    {
+      "name": "booking-app",
+      "url": "http://localhost:3002/remoteEntry.js",
+      "module": "./BookingList",
+      "scope": "bookingApp",
+      "routes": ["/bookings", "/book"],
+      "displayName": "Booking Management",
+      "roles": ["user", "admin"]
+    },
+    {
+      "name": "reporting-app",
+      "url": "http://localhost:3003/remoteEntry.js",
+      "module": "./ReportDashboard",
+      "scope": "reportingApp",
+      "routes": ["/reports"],
+      "displayName": "Reporting",
+      "roles": ["admin"]
+    }
+  ],
+  "fallbackConfig": {
+    "showErrorBoundary": true,
+    "retryAttempts": 3,
+    "retryDelay": 1000
+  }
+}
+```
+
+---
+
+## 🧪 Seed a Registry (optional)
+
+### Local (Express)
+```bash
+curl -s -X POST http://localhost:4000/registry -H 'Content-Type: application/json' -d '{
+  "name":"auth-app","displayName":"Authentication","scope":"authApp",
+  "url":"https://arh-mfe-auth.vercel.app/remoteEntry.js",
+  "routes":["/login","/profile"],"roles":["user","admin"],"module":"./Login"
+}'
+```
+
+### Vercel (serverless)
+```bash
+EP=https://arh-mfe-registry.vercel.app/api/registry
+curl -s -X POST "$EP" -H 'Content-Type: application/json' -d '{
+  "name":"booking-app","displayName":"Booking Management","scope":"bookingApp",
+  "url":"https://arh-mfe-booking.vercel.app/remoteEntry.js",
+  "routes":["/bookings","/book"],"roles":["user","admin"],"module":"./BookingList"
+}'
+```
+
+---
+
+## ✅ Reviewer Checklist
+
+- Host runs at `http://localhost:3000` and loads MFEs dynamically at runtime
+- Switching between local and Vercel registry requires **no rebuild**
+- Error boundary isolates failing remotes and retries intelligently
+- Shared libraries (React/DOM/Router) are singletons
+- Theming is togglable and persists across reloads
+- Clear build/deploy instructions and SPA routing
