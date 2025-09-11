@@ -16,29 +16,28 @@ export type RegistryResponse = {
   updatedAt?: string;
 };
 
-/** Safely resolve registry URL for both dev and prod */
+/**
+ * Resolve the registry URL without using `import.meta` (avoids Webpack warning).
+ * Uses EnvironmentPlugin-injected values at build time.
+ */
 function readRegistryUrl(): string {
-  const fromProcess =
-    typeof process !== 'undefined' &&
-    (process as any).env &&
-    (process as any).env.VITE_REGISTRY_URL;
+  const env = (typeof process !== 'undefined' ? (process as any).env : {}) || {};
+  const isDev = String(env.NODE_ENV || '').toLowerCase() !== 'production';
 
-  const meta: any =
-    typeof import.meta !== 'undefined' ? (import.meta as any) : undefined;
+  // Prefer explicitly provided env var
+  const fromEnv = env.VITE_REGISTRY_URL as string | undefined;
+  if (fromEnv && typeof fromEnv === 'string') return fromEnv;
 
-  const isDev = Boolean(meta?.env?.DEV);
-  const fromImportMeta = meta?.env?.VITE_REGISTRY_URL;
-
-  if (fromProcess) return String(fromProcess);
-  if (isDev && fromImportMeta) return String(fromImportMeta);
-
-  // Dev-only default helps local testing; prod default = disabled
+  // Sensible dev default; empty string disables registry in prod by default
   return isDev ? 'http://localhost:4000/registry' : '';
 }
 
 export const REGISTRY_URL = readRegistryUrl();
+
 export const hasRegistry = () =>
-  typeof REGISTRY_URL === 'string' && REGISTRY_URL.startsWith('http');
+  typeof REGISTRY_URL === 'string' &&
+  REGISTRY_URL.length > 0 &&
+  /^https?:\/\//i.test(REGISTRY_URL);
 
 async function fetchRegistry(): Promise<RegistryResponse | null> {
   if (!hasRegistry()) return null;
@@ -58,7 +57,10 @@ async function fetchStatic(): Promise<RegistryResponse> {
   return (await r.json()) as RegistryResponse;
 }
 
-function mergeByScope(primary: MicroFrontendConfig[], fallback: MicroFrontendConfig[]) {
+function mergeByScope(
+  primary: MicroFrontendConfig[],
+  fallback: MicroFrontendConfig[]
+) {
   const map = new Map<string, MicroFrontendConfig>();
   for (const m of fallback) map.set(m.scope, m);
   for (const m of primary) map.set(m.scope, m); // primary (registry) wins
@@ -75,7 +77,10 @@ export async function loadConfig(): Promise<RegistryResponse> {
   }
 
   const merged = mergeByScope(reg.microFrontends, stat.microFrontends || []);
-  const resp: RegistryResponse = { microFrontends: merged, updatedAt: reg.updatedAt };
+  const resp: RegistryResponse = {
+    microFrontends: merged,
+    updatedAt: reg.updatedAt,
+  };
   console.log('✅ Using merged config from registry + static:', resp);
   return resp;
 }

@@ -28,25 +28,22 @@ const config = {
   plugins: [
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'public/index.html'),
-      filename: 'index.html',        // <- make filename explicit
+      filename: 'index.html',
       cache: false,
     }),
-
     new webpack.EnvironmentPlugin({
-      VITE_REGISTRY_URL: '', // default empty (prod safe)
+      VITE_REGISTRY_URL: '',
     }),
-
-    // IMPORTANT: don't copy index.html, HtmlWebpackPlugin will emit it
     new CopyWebpackPlugin({
       patterns: [
         {
           from: path.resolve(__dirname, 'public'),
           to: '.',
-          globOptions: { ignore: ['**/index.html'] }, // <- fixes the Vercel error
+          globOptions: { ignore: ['**/index.html'] },
+          noErrorOnMissing: true,
         },
       ],
     }),
-
     new ModuleFederationPlugin({
       name: 'host_container',
       filename: 'remoteEntry.js',
@@ -71,7 +68,6 @@ const config = {
   },
 };
 
-// 👇 This is where to paste your log
 console.log(
   'Plugins:',
   (config.plugins || []).map((p) => (p && p.constructor && p.constructor.name) || 'Unknown')
