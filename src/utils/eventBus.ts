@@ -1,4 +1,4 @@
-// packages\host\src\utils\eventBus.ts
+
 import { EventHandler, EventBusEvents } from '../types/types';
 
 class EventBus {
@@ -28,7 +28,6 @@ class EventBus {
     const handlers = this.events.get(event)!;
     handlers.add(handler);
 
-    // Return unsubscribe function
     return () => {
       handlers.delete(handler);
       if (handlers.size === 0) {
@@ -36,8 +35,6 @@ class EventBus {
       }
     };
   }
-
-  // Alias for on() to support subscribe pattern
   subscribe<K extends keyof EventBusEvents>(
     event: K,
     handler: EventHandler<EventBusEvents[K]>
@@ -84,5 +81,4 @@ class EventBus {
   }
 }
 
-// Export singleton instance
 export const eventBus = new EventBus();

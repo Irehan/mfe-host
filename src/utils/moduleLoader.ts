@@ -15,7 +15,6 @@ class ModuleLoader {
   private maxRetries = 3;
   private retryDelay = 1000;
 
-  // Create unique cache key for each module
   private getCacheKey(config: MicroFrontendConfig): string {
     return `${config.scope}__${config.module}`;
   }
@@ -24,20 +23,16 @@ class ModuleLoader {
     const { name, url, scope, module } = config;
     const actualRetries = retries ?? this.maxRetries;
     const cacheKey = this.getCacheKey(config);
-
-    // Return cached module if already loaded - USE CACHE KEY
     if (this.loadedModules.has(cacheKey)) {
       console.log(`✅ Returning cached module: ${cacheKey}`);
       return this.loadedModules.get(cacheKey);
     }
 
-    // Return existing loading promise if already in progress - USE CACHE KEY
     if (this.loadingPromises.has(cacheKey)) {
       console.log(`⏳ Waiting for existing load of ${cacheKey}`);
       return this.loadingPromises.get(cacheKey);
     }
 
-    // Check if this module has failed recently - USE CACHE KEY
     const failedLoad = this.failedLoads.get(cacheKey);
     if (failedLoad && Date.now() - failedLoad.timestamp < 30000) {
       throw new Error(`Module ${cacheKey} recently failed to load. Please wait before retrying.`);
@@ -75,27 +70,25 @@ class ModuleLoader {
       try {
         console.log(`🔄 Attempt ${attempt}/${retries} to load ${scope}/${module} from ${url}`);
         
-        // Load the remote script
+
         await this.loadScript(url);
         
-        // Wait for container to be available
+    
         await this.waitForContainer(scope);
         
         const container = window[scope] as ModuleContainer;
         
-        // Initialize sharing if available
         if (typeof __webpack_init_sharing__ !== 'undefined') {
           await __webpack_init_sharing__('default');
         }
         
-        // Initialize the container
         if (typeof __webpack_share_scopes__ !== 'undefined' && __webpack_share_scopes__.default) {
           await container.init(__webpack_share_scopes__.default);
         } else {
           await container.init({});
         }
 
-        // Get the module factory
+
         const factory = await container.get(module);
         if (!factory) {
           throw new Error(`Module ${module} not found in container ${scope}`);

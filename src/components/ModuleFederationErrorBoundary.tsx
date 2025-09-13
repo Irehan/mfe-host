@@ -1,4 +1,3 @@
-// packages\host\src\components\ModuleFederationErrorBoundary.tsx
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { eventBus } from '../utils/eventBus';
 
@@ -45,8 +44,6 @@ class ModuleFederationErrorBoundary extends Component<Props, State> {
       error,
       errorInfo
     });
-
-    // Emit error event - componentStack can be null, which is now allowed in our types
     eventBus.emit('module:error', {
       payload: {
         module: this.props.moduleName,
@@ -55,20 +52,16 @@ class ModuleFederationErrorBoundary extends Component<Props, State> {
         componentStack: errorInfo.componentStack || undefined
       }
     });
-
-    // Call custom error handler if provided
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
 
-    // Auto-retry for certain types of errors
     if (this.shouldRetry(error) && this.state.retryCount < this.maxRetries) {
       this.scheduleRetry();
     }
   }
 
   private shouldRetry(error: Error): boolean {
-    // Retry for network-related errors or script loading errors
     const retryableErrors = [
       'Loading script failed',
       'ChunkLoadError',
@@ -83,7 +76,7 @@ class ModuleFederationErrorBoundary extends Component<Props, State> {
   }
 
   private scheduleRetry = () => {
-    const delay = Math.min(1000 * Math.pow(2, this.state.retryCount), 10000); // Exponential backoff, max 10s
+    const delay = Math.min(1000 * Math.pow(2, this.state.retryCount), 10000); 
     
     console.log(`🔄 Scheduling retry for ${this.props.moduleName} in ${delay}ms`);
     
@@ -120,10 +113,6 @@ class ModuleFederationErrorBoundary extends Component<Props, State> {
 
     console.log('📋 Error Report:', errorReport);
     
-    // In a real application, you would send this to your error tracking service
-    // Example: Sentry, LogRocket, Bugsnag, etc.
-    // errorTrackingService.captureException(errorReport);
-    
     alert('Error report copied to console. Please check the browser console for details.');
   };
 
@@ -135,12 +124,9 @@ class ModuleFederationErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
-      // Use custom fallback if provided
       if (this.props.fallback) {
         return <>{this.props.fallback}</>;
       }
-
-      // Default error UI
       return (
         <div style={{
           padding: '20px',

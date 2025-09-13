@@ -1,4 +1,3 @@
-// packages/host/src/context/AppContext.tsx
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { loadConfig, type RegistryResponse } from '../utils/configLoader';
 import { eventBus } from '../utils/eventBus';
@@ -18,7 +17,6 @@ function readUserFromStorage(): User | null {
     const raw = localStorage.getItem(USER_STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    // quick sanity checks
     if (parsed && parsed.id && parsed.username && parsed.email && parsed.role) {
       return parsed as User;
     }
@@ -48,9 +46,8 @@ type AppContextValue = {
 const AppContext = createContext<AppContextValue | undefined>(undefined);
 
 export const AppProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-  // 👇 seed user synchronously so routing doesn't bounce to /login on refresh
   const [state, setState] = useState<AppState>({
-    user: readUserFromStorage(),   // <— was null
+    user: readUserFromStorage(), 
     config: null,
     loading: true
   });
@@ -67,10 +64,7 @@ export const AppProvider: React.FC<React.PropsWithChildren> = ({ children }) => 
   };
 
   useEffect(() => {
-    // 1) Seed registry if needed, then load config
     seedRegistryFromStatic().finally(() => { void refreshConfig(); });
-
-    // 2) Auth events
     const onLogin = (data: unknown) => {
       const payload = (data as any)?.payload ?? data;
       const user: User | null = payload ?? null;

@@ -111,14 +111,12 @@ function AppContent() {
               Sign In
             </Link>
           )}
-          {/* 🔥 Theme switcher added here */}
           <ThemeSwitcher />
         </div>
       </nav>
 
       <main className="app-main">
         <Routes>
-          {/* Root redirect */}
           <Route
             path="/"
             element={
@@ -130,7 +128,7 @@ function AppContent() {
             }
           />
 
-          {/* Login */}
+
           <Route
             path="/login"
             element={
@@ -147,7 +145,6 @@ function AppContent() {
             }
           />
 
-          {/* Dashboard */}
           <Route
             path="/dashboard"
             element={
@@ -202,7 +199,6 @@ function AppContent() {
             }
           />
 
-          {/* Profile */}
           <Route
             path="/profile"
             element={
@@ -218,8 +214,6 @@ function AppContent() {
               )
             }
           />
-
-          {/* Bookings (admin only) */}
           <Route
             path="/bookings"
             element={
@@ -233,8 +227,6 @@ function AppContent() {
               </RequireRole>
             }
           />
-
-          {/* Reports (admin only) */}
           <Route
             path="/reports"
             element={
@@ -248,8 +240,6 @@ function AppContent() {
               </RequireRole>
             }
           />
-
-          {/* 404 */}
           <Route
             path="*"
             element={

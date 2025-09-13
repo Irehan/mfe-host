@@ -1,4 +1,4 @@
-// packages/host/src/utils/registrySeeder.ts
+
 import type { MicroFrontendConfig, RegistryResponse } from './configLoader';
 import { REGISTRY_URL, hasRegistry } from './configLoader';
 
@@ -27,7 +27,6 @@ async function getStaticConfig(): Promise<RegistryResponse | null> {
   }
 }
 
-/** Seed registry from /config.json if registry is enabled and empty */
 export async function seedRegistryFromStatic(): Promise<void> {
   if (!hasRegistry()) {
     console.log('ℹ️ Registry not configured; skipping seed.');

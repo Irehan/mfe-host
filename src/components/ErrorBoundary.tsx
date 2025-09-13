@@ -1,4 +1,3 @@
-// D:\web-dev\react-practice\mfe-demo\packages\host\src\components\ErrorBoundary.tsx
 import React from 'react';
 import { ErrorBoundary as ReactErrorBoundary } from 'react-error-boundary';
 

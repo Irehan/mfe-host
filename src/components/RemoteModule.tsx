@@ -17,7 +17,7 @@ type RemoteModuleProps = {
   config: RemoteConfig;
   user?: any;
   fallbackComponent?: React.ComponentType;
-  [key: string]: any; // allow extra props
+  [key: string]: any;
 };
 
 const DefaultFallback: React.FC = () => (
@@ -37,10 +37,8 @@ const RemoteModule: React.FC<RemoteModuleProps> = (props) => {
   useEffect(() => {
     if (!config) return;
     console.log('📦 RemoteModule effect triggered for', key);
-
-    // Build a fully-typed MicroFrontendConfig (name/displayName must be strings)
     const mfConfig: MicroFrontendConfig = {
-      name: config.name ?? config.scope, // fallback to scope if name absent
+      name: config.name ?? config.scope, 
       displayName: config.displayName ?? config.name ?? config.scope,
       scope: config.scope,
       url: config.url,
@@ -81,7 +79,6 @@ const RemoteModule: React.FC<RemoteModuleProps> = (props) => {
     };
   }, [key, config?.url, config?.scope, config?.module, config?.name, config?.displayName, config?.routes, config?.roles]);
 
-  // Handlers to pass into specific remotes
   const handleLogin = (u: any) => {
     try {
       console.log('🔐 RemoteModule: Login handler called with:', u);

@@ -1,5 +1,3 @@
-// packages/host/src/utils/configLoader.ts
-
 export type MicroFrontendConfig = {
   name: string;
   displayName: string;
@@ -16,19 +14,11 @@ export type RegistryResponse = {
   updatedAt?: string;
 };
 
-/**
- * Resolve the registry URL without using `import.meta` (avoids Webpack warning).
- * Uses EnvironmentPlugin-injected values at build time.
- */
 function readRegistryUrl(): string {
   const env = (typeof process !== 'undefined' ? (process as any).env : {}) || {};
   const isDev = String(env.NODE_ENV || '').toLowerCase() !== 'production';
-
-  // Prefer explicitly provided env var
   const fromEnv = env.VITE_REGISTRY_URL as string | undefined;
   if (fromEnv && typeof fromEnv === 'string') return fromEnv;
-
-  // Sensible dev default; empty string disables registry in prod by default
   return isDev ? 'http://localhost:4000/registry' : '';
 }
 
@@ -63,11 +53,10 @@ function mergeByScope(
 ) {
   const map = new Map<string, MicroFrontendConfig>();
   for (const m of fallback) map.set(m.scope, m);
-  for (const m of primary) map.set(m.scope, m); // primary (registry) wins
+  for (const m of primary) map.set(m.scope, m);
   return Array.from(map.values());
 }
 
-/** Registry → Static → Merge */
 export async function loadConfig(): Promise<RegistryResponse> {
   const [reg, stat] = await Promise.all([fetchRegistry(), fetchStatic()]);
 
